@@ -151,33 +151,67 @@ public class RegionCodeUtil {
 
     private void saveToDatabase() {
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-            // 创建表（如果不存在）
+            // 设置连接的字符集
             try (Statement stmt = conn.createStatement()) {
-                stmt.execute("CREATE TABLE IF NOT EXISTS region_codes (" +
-                           "code VARCHAR(12) PRIMARY KEY," +
-                           "region VARCHAR(255) NOT NULL)");
+                stmt.execute("SET NAMES utf8mb4");
             }
 
-            // 清空现有数据
+            // 检查表是否存在且字符集正确
+            boolean needCreateTable = true;
             try (Statement stmt = conn.createStatement()) {
-                stmt.execute("TRUNCATE TABLE region_codes");
-            }
-
-            // 批量插入数据
-            String sql = "INSERT INTO region_codes (code, region) VALUES (?, ?)";
-            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-                conn.setAutoCommit(false);
-                for (Map.Entry<String, String> entry : regionCodeMap.entrySet()) {
-                    pstmt.setString(2, entry.getKey());  // region
-                    pstmt.setString(1, entry.getValue()); // code
-                    pstmt.addBatch();
+                ResultSet rs = stmt.executeQuery(
+                    "SELECT TABLE_COLLATION " +
+                    "FROM INFORMATION_SCHEMA.TABLES " +
+                    "WHERE TABLE_SCHEMA = 'mshd' AND TABLE_NAME = 'region_codes'"
+                );
+                
+                if (rs.next()) {
+                    String tableCollation = rs.getString("TABLE_COLLATION");
+                    if ("utf8mb4_unicode_ci".equals(tableCollation)) {
+                        needCreateTable = false;
+                        // 如果表存在且字符集正确，则输出提示结果
+                        // stmt.execute("TRUNCATE TABLE region_codes");
+                        System.out.println("The table is set correctly!!");
+                    }
                 }
-                pstmt.executeBatch();
-                conn.commit();
             }
-            System.out.println("Successfully saved " + regionCodeMap.size() + " entries to database");
+
+            // 如果需要，创建新表
+            if (needCreateTable) {
+                try (Statement stmt = conn.createStatement()) {
+                    // 先删除表（如果存在）
+                    stmt.execute("DROP TABLE IF EXISTS region_codes");
+                    
+                    // 重新创建表，确保使用正确的字符集
+                    stmt.execute("CREATE TABLE region_codes (" +
+                               "code VARCHAR(12) PRIMARY KEY," +
+                               "region VARCHAR(255) NOT NULL" +
+                               ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+                } 
+                // 批量插入数据
+                String sql = "INSERT INTO region_codes (code, region) VALUES (?, ?)";
+                try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                    conn.setAutoCommit(false);
+                    int batchSize = 0;
+                    for (Map.Entry<String, String> entry : regionCodeMap.entrySet()) {
+                        pstmt.setString(1, entry.getValue()); // code
+                        pstmt.setString(2, entry.getKey());   // region
+                        pstmt.addBatch();
+                    
+                    if (++batchSize % 1000 == 0) {
+                            pstmt.executeBatch();
+                            conn.commit();
+                        }
+                    }
+                    // 提交剩余的数据
+                    pstmt.executeBatch();
+                    conn.commit();
+                    System.out.println("Successfully saved " + regionCodeMap.size() + " entries to database");
+                }
+            }
         } catch (SQLException e) {
             System.err.println("Database error: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
