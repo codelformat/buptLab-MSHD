@@ -13,8 +13,12 @@ import java.time.format.DateTimeFormatter;
 public class DisasterCodeServiceImpl implements DisasterCodeService {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
+    private final RegionCodeUtil regionCodeUtil;
+
     @Autowired
-    private RegionCodeUtil regionCodeUtil;
+    public DisasterCodeServiceImpl(RegionCodeUtil regionCodeUtil) {
+        this.regionCodeUtil = regionCodeUtil;
+    }
 
     @Override
     public String encode(DisasterInfo info) {
@@ -277,24 +281,137 @@ public class DisasterCodeServiceImpl implements DisasterCodeService {
 
     // 解码辅助方法
     private String decodeLocation(String code) {
-        // 这里需要实现反向查找，可以在RegionCodeUtil中添加反向映射
-        // 暂时返回原始编码
-        return code;
+        return regionCodeUtil.getLocationByCode(code);
     }
 
     private String decodeSource(String code) {
-        // 实现来源解码逻辑
-        return "示例来源"; // 示例实现
+        switch (code) {
+            // 大类代码 1, 业务报送数据
+            case "100": return "业务报送数据";
+            case "101": return "后方地震应急指挥部";
+            case "120": return "应急指挥技术系统";
+            case "121": return "社会服务工程应急救援系统";
+            case "140": return "危险区预评估工作组";
+            case "141": return "地震应急指挥技术协调组";
+            case "142": return "震后政府信息支持工作项目";
+            case "180": return "灾情快速上报接收处理系统";
+            case "181": return "地方地震局应急信息服务相关技术系统";
+            case "199": return "其他业务报送数据";
+            // 大类代码 2, 泛在感知数据
+            case "200": return "互联网感知";
+            case "201": return "通信网感知";
+            case "202": return "舆情网感知";
+            case "203": return "电力系统感知";
+            case "204": return "交通系统感知";
+            case "205": return "其他泛在感知数据";
+            // 大类代码 3, 其他数据
+            case "300": return "其他数据";
+            default: return "未知来源";
+        }
     }
 
     private String decodeCarrier(String code) {
-        // 实现载体解码逻辑
-        return "文字"; // 示例实现
+        switch (code) {
+            case "0": return "文字";
+            case "1": return "图像";
+            case "2": return "音频";
+            case "3": return "视频";
+            case "4": return "其他";
+            default: return "未知载体";
+        }
     }
 
     private void decodeDisasterInfo(String code, DisasterInfo info) {
-        // 实现灾情信息解码逻辑
-        info.setCategory("示例分类");
-        info.setLabel("示例指标");
+        if (code == null || code.length() != 6) {
+            throw new IllegalArgumentException("Invalid disaster info code");
+        }
+
+        String categoryCode = code.substring(0, 3);
+        String labelCode = code.substring(3);
+
+        // 解码category（前3位）
+        String category = decodeCategoryFromCode(categoryCode);
+        info.setCategory(category);
+
+        // 解码label（后3位）
+        String label = decodeLabelFromCode(categoryCode.charAt(0), labelCode);
+        info.setLabel(label);
+    }
+
+    private String decodeCategoryFromCode(String categoryCode) {
+        switch (categoryCode) {
+            // 震情
+            case "101": return "震情";
+            // 人员伤亡及失踪
+            case "201": return "死亡";
+            case "202": return "受伤";
+            case "203": return "失踪";
+            // 房屋破坏
+            case "301": return "土木";
+            case "302": return "砖木";
+            case "303": return "砖混";
+            case "304": return "框架";
+            case "305": return "其他";
+            // 生命线工程灾情
+            case "401": return "交通";
+            case "402": return "供水";
+            case "403": return "输油";
+            case "404": return "燃气";
+            case "405": return "电力";
+            case "406": return "通信";
+            case "407": return "水利";
+            // 次生灾害
+            case "501": return "崩塌";
+            case "502": return "滑坡";
+            case "503": return "泥石流";
+            case "504": return "岩溶塌陷";
+            case "505": return "地裂缝";
+            case "506": return "地面沉降";
+            case "507": return "其他（沙土液化、火灾、毒气泄露、爆炸、环境污染、瘟疫、海啸等）";
+            default: return "未知分类";
+        }
+    }
+
+    private String decodeLabelFromCode(char categoryType, String labelCode) {
+        switch (categoryType) {
+            case '1': // 震情
+                switch (labelCode) {
+                    case "001": return "地理位置";
+                    case "002": return "时间";
+                    case "003": return "震级";
+                    case "004": return "震源深度";
+                    case "005": return "烈度";
+                    default: return "未知指标";
+                }
+            case '2': // 人员伤亡及失踪
+                switch (labelCode) {
+                    case "001": return "受灾人数";
+                    case "002": return "受灾程度";
+                    default: return "未知指标";
+                }
+            case '3': // 房屋破坏
+                switch (labelCode) {
+                    case "001": return "一般损坏面积";
+                    case "002": return "严重损坏面积";
+                    case "003": return "受灾程度";
+                    default: return "未知指标";
+                }
+            case '4': // 生命线工程灾情
+                switch (labelCode) {
+                    case "001": return "受灾设施数";
+                    case "002": return "受灾范围";
+                    case "003": return "受灾程度";
+                    default: return "未知指标";
+                }
+            case '5': // 次生灾害
+                switch (labelCode) {
+                    case "001": return "灾害损失";
+                    case "002": return "灾害范围";
+                    case "003": return "受灾程度";
+                    default: return "未知指标";
+                }
+            default:
+                return "未知指标";
+        }
     }
 } 

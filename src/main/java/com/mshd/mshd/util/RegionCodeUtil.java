@@ -10,15 +10,22 @@ import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
 import java.io.*;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 
 @Component
 public class RegionCodeUtil {
     private static Map<String, String> regionCodeMap = new HashMap<>();
+    private static Map<String, String> reverseRegionCodeMap = new HashMap<>();
     private static final String JSON_CACHE_FILE = "region_code_cache.json";
     private static final String EXCEL_FILE_PATTERN = "region_code_*.xls";
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    
+    // 数据库连接配置
+    private static final String DB_URL = "jdbc:mysql://localhost:3307/mshd";
+    private static final String DB_USER = "root";
+    private static final String DB_PASSWORD = "020111";
 
     @PostConstruct
     public void init() {
@@ -27,6 +34,11 @@ public class RegionCodeUtil {
                 loadFromExcelFiles();
                 saveToCache();
             }
+            // 初始化反向映射
+            regionCodeMap.forEach((location, code) -> reverseRegionCodeMap.put(code, location));
+            
+            // 保存到MySQL
+            saveToDatabase();
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Failed to initialize RegionCodeUtil: " + e.getMessage());
@@ -137,6 +149,38 @@ public class RegionCodeUtil {
         }
     }
 
+    private void saveToDatabase() {
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            // 创建表（如果不存在）
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("CREATE TABLE IF NOT EXISTS region_codes (" +
+                           "code VARCHAR(12) PRIMARY KEY," +
+                           "region VARCHAR(255) NOT NULL)");
+            }
+
+            // 清空现有数据
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("TRUNCATE TABLE region_codes");
+            }
+
+            // 批量插入数据
+            String sql = "INSERT INTO region_codes (code, region) VALUES (?, ?)";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                conn.setAutoCommit(false);
+                for (Map.Entry<String, String> entry : regionCodeMap.entrySet()) {
+                    pstmt.setString(2, entry.getKey());  // region
+                    pstmt.setString(1, entry.getValue()); // code
+                    pstmt.addBatch();
+                }
+                pstmt.executeBatch();
+                conn.commit();
+            }
+            System.out.println("Successfully saved " + regionCodeMap.size() + " entries to database");
+        } catch (SQLException e) {
+            System.err.println("Database error: " + e.getMessage());
+        }
+    }
+
     public static String getRegionCode(String location) {
         return regionCodeMap.getOrDefault(location, "000000000000");
     }
@@ -144,5 +188,9 @@ public class RegionCodeUtil {
     // 用于测试的方法
     public int getCacheSize() {
         return regionCodeMap.size();
+    }
+
+    public String getLocationByCode(String code) {
+        return reverseRegionCodeMap.getOrDefault(code, "未知地区");
     }
 } 
