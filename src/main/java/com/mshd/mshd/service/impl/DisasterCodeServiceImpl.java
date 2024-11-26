@@ -281,7 +281,7 @@ public class DisasterCodeServiceImpl implements DisasterCodeService {
 
     // 解码辅助方法
     private String decodeLocation(String code) {
-        return regionCodeUtil.getLocationByCode(code);
+        return RegionCodeUtil.getLocationByCode(code);
     }
 
     private String decodeSource(String code) {
