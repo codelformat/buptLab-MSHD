@@ -1,0 +1,18 @@
+package com.lyf.seexp.mapper;
+
+import com.lyf.seexp.pojo.Event;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+@Mapper
+public interface EventMapper {
+
+
+    // 添加条目
+    @Insert("INSERT INTO event(code, location, time, source_category, source_subcategory, carrier, disaster_category, disaster_subcategory, disaster_indicator, description) " +
+            "VALUES (#{event.code}, #{event.location}, #{event.time}, #{event.sourceCategory}, #{event.sourceSubcategory}, #{event.carrier}, #{event.disasterCategory}, #{event.disasterSubcategory}, #{event.disasterIndicator}, #{event.description})")
+    void add(@Param("event") Event event);
+
+
+}
