@@ -20,4 +20,8 @@ public class Event {
     private String disasterSubcategory; // 灾情子类 (Disaster Subcategory)
     private String disasterIndicator;   // 灾情指标 (Disaster Indicator)
     private String description;         // 描述 (Description)
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

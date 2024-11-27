@@ -4,6 +4,8 @@ import com.lyf.seexp.pojo.Event;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+import java.util.List;
 
 @Mapper
 public interface EventMapper {
@@ -14,5 +16,8 @@ public interface EventMapper {
             "VALUES (#{event.code}, #{event.location}, #{event.time}, #{event.sourceCategory}, #{event.sourceSubcategory}, #{event.carrier}, #{event.disasterCategory}, #{event.disasterSubcategory}, #{event.disasterIndicator}, #{event.description})")
     void add(@Param("event") Event event);
 
+    // 添加查询所有事件的方法
+    @Select("SELECT * FROM event ORDER BY time DESC")
+    List<Event> findAll();
 
 }

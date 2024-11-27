@@ -5,6 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 public interface EventService {
     Event decode(String encodedEvent);
@@ -21,4 +22,7 @@ public interface EventService {
     String uploadFile(MultipartFile multipartFile);
 
     ArrayList<Event> readXlsxFile(InputStream inputStream);
+
+    // 添加获取事件列表的方法
+    List<Event> getEventList();
 }

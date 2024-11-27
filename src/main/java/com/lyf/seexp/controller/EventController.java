@@ -13,15 +13,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
-
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestMethod;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/event")
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
 @Validated
 public class EventController {
     @Autowired
@@ -29,8 +33,8 @@ public class EventController {
 
 //    @PostMapping("/decode")
 //    public Result decode(@Pattern(regexp = "^\\d{36}$", message = "Code must be exactly 36 digits long") String code) {
-//        try {
-//            //Event event = eventService.decode(code);
+    //        try {
+    //            //Event event = eventService.decode(code);
 //            eventService.addItemFromCode(code);
 //        } catch (Exception e) {
 //            e.printStackTrace();
@@ -107,5 +111,18 @@ public class EventController {
             return Result.error("xls读取失败");
         }
         return Result.success("xlsx读取成功");
+    }
+
+    @GetMapping("/list")
+    public Result getEventList() {
+        try {
+            List<Event> events = eventService.getEventList();
+            System.out.println(events.get(0).getCode());
+            System.out.println(Result.success(events));
+            return Result.success(events);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("获取事件列表失败");
+        }
     }
 }
