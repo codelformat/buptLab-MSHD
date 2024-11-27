@@ -225,7 +225,7 @@ public class DisasterCodeServiceImpl implements DisasterCodeService {
             case "岩溶塌陷": categoryCode = "504"; break;
             case "地裂缝": categoryCode = "505"; break;
             case "地面沉降": categoryCode = "506"; break;
-            case "其他（沙土液化、火灾、毒气泄露、爆炸、环境污染、瘟疫、海啸等）": categoryCode = "507"; break;
+            case "沙土液化": case "火灾": case "毒气泄露": case "爆炸": case "环境污染": case "瘟疫": case "海啸": categoryCode = "507"; break;
             default: categoryCode = "000";
         }
 
