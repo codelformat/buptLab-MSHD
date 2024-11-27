@@ -4,6 +4,7 @@ import com.lyf.seexp.pojo.Event;
 import com.lyf.seexp.pojo.Result;
 import com.lyf.seexp.service.EventService;
 import com.lyf.seexp.utils.AliOSSUtils;
+import com.lyf.seexp.utils.ImgbbUtils;
 import jakarta.validation.constraints.Pattern;
 import lombok.val;
 import org.springframework.validation.annotation.Validated;
@@ -108,4 +109,31 @@ public class EventController {
         }
         return Result.success("xlsx读取成功");
     }
+@PostMapping("/addPics")
+public Result addPicItems(@RequestParam MultipartFile file){
+    try {
+        if (file.isEmpty()) {
+            return Result.error("文件为空");
+        }
+
+        // 调用工具类上传图片到 Imgbb
+        String result = ImgbbUtils.uploadToImgbb(file);
+
+        if (result != null) {
+            // 分离 URL 和文件名
+            String[] parts = result.split("@filename=");
+            String imageUrl = parts[0];
+            String code = parts.length > 1 ? parts[1] : "unknown-id";
+            Event eventWithoutDescription = eventService.decode(code);
+            eventWithoutDescription.setDescription(imageUrl);
+            eventService.addItem(eventWithoutDescription);
+        } else {
+            return Result.error("id为空");
+        }
+    } catch (Exception e) {
+
+        return Result.error("数据库错误");
+    }
+    return Result.success("iamge成功存入数据库");
+}
 }
