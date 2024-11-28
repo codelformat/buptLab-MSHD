@@ -22,6 +22,10 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/event")
@@ -111,11 +115,14 @@ public class EventController {
     }
 
     @GetMapping("/list")
-    public Result getEventList() {
+    public Result getEventList(@RequestParam(required = false) String search) {
         try {
-            List<Event> events = eventService.getEventList();
-            System.out.println(events.get(0).getCode());
-            System.out.println(Result.success(events));
+            List<Event> events;
+            if (search != null && !search.trim().isEmpty()) {
+                events = eventService.searchEvents(search.trim());
+            } else {
+                events = eventService.getEventList();
+            }
             return Result.success(events);
         } catch (Exception e) {
             e.printStackTrace();
@@ -149,5 +156,30 @@ public class EventController {
             return Result.error("数据库错误");
         }
         return Result.success("iamge成功存入数据库");
+    }
+
+    @DeleteMapping("/code/{code}")
+    public Result deleteEvent(@PathVariable String code) {
+        try {
+            eventService.deleteByCode(code);
+            return Result.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("删除失败");
+        }
+    }
+
+    @PutMapping("/code/{code}")
+    public Result updateEvent(@PathVariable String code, @RequestBody Event event) {
+        try {
+            if (!code.equals(event.getCode())) {
+                return Result.error("编码不匹配");
+            }
+            eventService.updateByCode(event);
+            return Result.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("更新失败");
+        }
     }
 }

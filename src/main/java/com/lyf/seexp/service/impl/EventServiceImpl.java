@@ -567,4 +567,24 @@ public class EventServiceImpl implements EventService {
             throw new RuntimeException("Failed to fetch event list");
         }
     }
+
+    @Override
+    public void deleteByCode(String code) {
+        eventMapper.deleteByCode(code);
+    }
+
+    @Override
+    public void updateByCode(Event event) {
+        eventMapper.updateByCode(event);
+    }
+
+    @Override
+    public List<Event> searchEvents(String query) {
+        try {
+            return eventMapper.searchEvents(query);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to search events");
+        }
+    }
 }

@@ -25,4 +25,10 @@ public interface EventService {
 
     // 添加获取事件列表的方法
     List<Event> getEventList();
+
+    void deleteByCode(String code);
+    void updateByCode(Event event);
+
+    // 添加搜索方法
+    List<Event> searchEvents(String query);
 }
