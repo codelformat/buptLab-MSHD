@@ -3,6 +3,7 @@ package com.lyf.seexp.utils;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,7 +19,7 @@ public class AliOSSUtils {
     /**
      * 实现上传图片到OSS
      */
-    public static String upload(MultipartFile multipartFile) throws IOException {
+    public static String upload(@RequestParam("file")MultipartFile multipartFile) throws IOException {
         // 获取上传的文件的输入流
         InputStream inputStream = multipartFile.getInputStream();
 
