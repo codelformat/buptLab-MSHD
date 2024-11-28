@@ -26,7 +26,7 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch('http://localhost:12500/event/list', {
+        const response = await fetch('http://localhost:8080/event/list', {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
