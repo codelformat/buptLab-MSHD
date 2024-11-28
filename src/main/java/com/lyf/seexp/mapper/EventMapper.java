@@ -17,7 +17,15 @@ public interface EventMapper {
     void add(@Param("event") Event event);
 
     // 添加查询所有事件的方法
-    @Select("SELECT * FROM event ORDER BY time DESC")
+    @Select("SELECT code, location, time, " +
+            "source_category as sourceCategory, " +
+            "source_subcategory as sourceSubcategory, " +
+            "carrier, " +
+            "disaster_category as disasterCategory, " +
+            "disaster_subcategory as disasterSubcategory, " +
+            "disaster_indicator as disasterIndicator, " +
+            "description " +
+            "FROM event ORDER BY time DESC")
     List<Event> findAll();
 
 }
