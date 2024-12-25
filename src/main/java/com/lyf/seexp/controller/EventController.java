@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import com.lyf.seexp.service.DataBackupService;
 
 @RestController
 @RequestMapping("/event")
@@ -33,6 +34,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class EventController {
     @Autowired
     private EventService eventService;
+
+    @Autowired
+    private DataBackupService dataBackupService;
 
     // @PostMapping("/decode")
     // public Result decode(@Pattern(regexp = "^\\d{36}$", message = "Code must be
@@ -180,6 +184,38 @@ public class EventController {
         } catch (Exception e) {
             e.printStackTrace();
             return Result.error("更新失败");
+        }
+    }
+
+    @GetMapping("/backup/list")
+    public Result listBackupEvents(@RequestParam(required = false) String search) {
+        try {
+            List<Event> events = dataBackupService.searchBackupEvents(search);
+            return Result.success(events);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
+
+    @PostMapping("/backup/trigger")
+    public Result triggerBackup() {
+        try {
+            dataBackupService.performBackup();
+            return Result.success("数据备份成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("数据备份失败: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/backup/reset")
+    public Result resetBackup() {
+        try {
+            dataBackupService.resetBackupSchema();
+            return Result.success("备份表重置成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("备份表重置失败: " + e.getMessage());
         }
     }
 }

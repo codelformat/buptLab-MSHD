@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Edit2, Trash2, MoreVertical, X } from 'lucide-react'
+import { Edit2, Trash2, MoreVertical, X, Archive, Save, RefreshCw } from 'lucide-react'
 
 interface Event {
   code: string
@@ -183,12 +183,16 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
   const [error, setError] = useState<string | null>(null)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isSearchingBackup, setIsSearchingBackup] = useState(false)
+  const [isBackingUp, setIsBackingUp] = useState(false)
+  const [isResetting, setIsResetting] = useState(false)
 
   const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`http://localhost:12500/event/list?search=${encodeURIComponent(searchQuery)}`, {
+      const endpoint = isSearchingBackup ? 'backup/list' : 'list';
+      const response = await fetch(`http://localhost:12500/event/${endpoint}?search=${encodeURIComponent(searchQuery)}`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -217,7 +221,7 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
 
   useEffect(() => {
     fetchData();
-  }, [searchQuery]);
+  }, [searchQuery, isSearchingBackup]);
 
   const handleEdit = (event: Event) => {
     setEditingEvent(event);
@@ -280,6 +284,78 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
     }
   };
 
+  const triggerBackup = async () => {
+    if (!confirm('确定要立即备份数据吗？这将会把超过时间窗口的数据移动到备份数据库。')) {
+      return;
+    }
+    
+    try {
+      setIsBackingUp(true);
+      const response = await fetch('http://localhost:12500/event/backup/trigger', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      if (result.code === 0) {
+        alert('数据备份成功');
+        fetchData(); // 刷新数据
+      } else {
+        throw new Error(result.msg || '备份失败');
+      }
+    } catch (error) {
+      console.error('备份错误:', error);
+      alert(error instanceof Error ? error.message : '备份失败');
+    } finally {
+      setIsBackingUp(false);
+    }
+  };
+
+  const resetBackup = async () => {
+    if (!confirm('确定要重置备份表吗？这将删除所有备份数据并重新创建备份表。')) {
+      return;
+    }
+    
+    try {
+      setIsResetting(true);
+      const response = await fetch('http://localhost:12500/event/backup/reset', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      if (result.code === 0) {
+        alert('备份表重置成功');
+        if (isSearchingBackup) {
+          fetchData(); // 如果当前在查看备份数据，则刷新数据
+        }
+      } else {
+        throw new Error(result.msg || '重置失败');
+      }
+    } catch (error) {
+      console.error('重置错误:', error);
+      alert(error instanceof Error ? error.message : '重置失败');
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   if (error) {
     return (
       <div className="bg-red-50 p-4 rounded-lg text-red-600">
@@ -290,6 +366,36 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
 
   return (
     <>
+      <div className="mb-4 flex justify-end space-x-2">
+        <button
+          onClick={resetBackup}
+          disabled={isResetting}
+          className={`flex items-center px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed`}
+        >
+          <RefreshCw className="h-4 w-4 mr-2" />
+          {isResetting ? '重置中...' : '重置备份表'}
+        </button>
+        <button
+          onClick={triggerBackup}
+          disabled={isBackingUp}
+          className={`flex items-center px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed`}
+        >
+          <Save className="h-4 w-4 mr-2" />
+          {isBackingUp ? '备份中...' : '立即备份'}
+        </button>
+        <button
+          onClick={() => setIsSearchingBackup(!isSearchingBackup)}
+          className={`flex items-center px-4 py-2 rounded-md ${
+            isSearchingBackup
+              ? 'bg-yellow-600 text-white hover:bg-yellow-700'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
+          }`}
+        >
+          <Archive className="h-4 w-4 mr-2" />
+          {isSearchingBackup ? '查看当前数据' : '查看备份数据'}
+        </button>
+      </div>
+
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
