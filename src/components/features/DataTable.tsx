@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Edit2, Trash2, MoreVertical, X, Archive, Save, RefreshCw } from 'lucide-react'
+import { Edit2, Trash2, MoreVertical, X, Archive, Save, RefreshCw, Clock } from 'lucide-react'
 
 interface Event {
   code: string
@@ -177,6 +177,62 @@ const EditModal = ({ event, isOpen, onClose, onSave }: EditModalProps) => {
   )
 }
 
+interface TimeWindowModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (days: number) => void;
+  currentValue: number;
+}
+
+const TimeWindowModal = ({ isOpen, onClose, onSave, currentValue }: TimeWindowModalProps) => {
+  const [days, setDays] = useState(currentValue);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">设置备份时间窗口</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">时间窗口（天）</label>
+            <input
+              type="number"
+              min="1"
+              value={days}
+              onChange={(e) => setDays(parseInt(e.target.value) || currentValue)}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex justify-end space-x-3 pt-4">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+            >
+              取消
+            </button>
+            <button
+              onClick={() => {
+                if (days > 0) {
+                  onSave(days);
+                }
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              保存
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function DataTable({ searchQuery }: { searchQuery: string }) {
   const [data, setData] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
@@ -186,6 +242,48 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
   const [isSearchingBackup, setIsSearchingBackup] = useState(false)
   const [isBackingUp, setIsBackingUp] = useState(false)
   const [isResetting, setIsResetting] = useState(false)
+  const [timeWindowDays, setTimeWindowDays] = useState(365)
+  const [isTimeWindowModalOpen, setIsTimeWindowModalOpen] = useState(false)
+
+  useEffect(() => {
+    // 获取当前的时间窗口设置
+    fetch('http://localhost:12500/event/backup/time-window', {
+      credentials: 'include',
+    })
+      .then(response => response.json())
+      .then(result => {
+        if (result.code === 0) {
+          setTimeWindowDays(result.data);
+        }
+      })
+      .catch(console.error);
+  }, []);
+
+  const handleSetTimeWindow = async (days: number) => {
+    try {
+      const response = await fetch('http://localhost:12500/event/backup/time-window', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ days }),
+      });
+      
+      const result = await response.json();
+      if (result.code === 0) {
+        setTimeWindowDays(days);
+        setIsTimeWindowModalOpen(false);
+        alert('时间窗口设置成功');
+      } else {
+        throw new Error(result.msg || '设置失败');
+      }
+    } catch (error) {
+      console.error('设置错误:', error);
+      alert(error instanceof Error ? error.message : '设置失败');
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -368,6 +466,13 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
     <>
       <div className="mb-4 flex justify-end space-x-2">
         <button
+          onClick={() => setIsTimeWindowModalOpen(true)}
+          className="flex items-center px-4 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-700"
+        >
+          <Clock className="h-4 w-4 mr-2" />
+          设置时间窗口 ({timeWindowDays}天)
+        </button>
+        <button
           onClick={resetBackup}
           disabled={isResetting}
           className={`flex items-center px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed`}
@@ -501,6 +606,13 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
           setEditingEvent(null);
         }}
         onSave={handleSave}
+      />
+
+      <TimeWindowModal
+        isOpen={isTimeWindowModalOpen}
+        onClose={() => setIsTimeWindowModalOpen(false)}
+        onSave={handleSetTimeWindow}
+        currentValue={timeWindowDays}
       />
     </>
   )

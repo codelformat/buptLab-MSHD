@@ -218,4 +218,29 @@ public class EventController {
             return Result.error("备份表重置失败: " + e.getMessage());
         }
     }
+
+    @GetMapping("/backup/time-window")
+    public Result getBackupTimeWindow() {
+        try {
+            Integer days = dataBackupService.getTimeWindow();
+            return Result.success(days);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("获取时间窗口失败: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/backup/time-window")
+    public Result setBackupTimeWindow(@RequestParam Integer days) {
+        try {
+            if (days <= 0) {
+                return Result.error("时间窗口必须大于0天");
+            }
+            dataBackupService.setTimeWindow(days);
+            return Result.success("时间窗口设置成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("设置时间窗口失败: " + e.getMessage());
+        }
+    }
 }

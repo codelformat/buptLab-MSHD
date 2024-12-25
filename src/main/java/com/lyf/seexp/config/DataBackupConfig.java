@@ -19,6 +19,12 @@ public class DataBackupConfig {
         return timeWindowDays;
     }
 
+    public void setTimeWindowDays(Integer timeWindowDays) {
+        if (timeWindowDays != null && timeWindowDays > 0) {
+            this.timeWindowDays = timeWindowDays;
+        }
+    }
+
     public String getBackupCron() {
         return backupCron;
     }

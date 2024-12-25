@@ -158,4 +158,12 @@ public class DataBackupService {
         // 重新初始化
         initBackupSchema();
     }
+
+    public Integer getTimeWindow() {
+        return backupConfig.getTimeWindowDays();
+    }
+
+    public void setTimeWindow(Integer days) {
+        backupConfig.setTimeWindowDays(days);
+    }
 } 
