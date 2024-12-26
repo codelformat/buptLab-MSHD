@@ -1,5 +1,8 @@
 {
   "devDependencies": {
     "@types/amap-js-api": "^1.4.16"
+  },
+  "dependencies": {
+    "recharts": "^2.15.0"
   }
 }
