@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation"; // 导入 useRouter
 import axios from "axios";
+import { PORT } from "@/components/constraints";
 
 export default function LoginPage() {
     const [username, setUsername] = useState<string>("");
@@ -27,7 +28,7 @@ export default function LoginPage() {
             formData.append('username', username)
             formData.append("password",password)
 
-            const response = await fetch("http://localhost:8080/user/login", {
+            const response = await fetch(`http://localhost:${PORT}/user/login`, {
                 method: 'POST',
                 body: formData,
                 credentials: 'include',
