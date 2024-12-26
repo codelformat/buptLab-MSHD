@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Edit2, Trash2, MoreVertical, X, Archive, Save, RefreshCw, Clock } from 'lucide-react'
+import { PORT } from '@/components/constraints'
 
 interface Event {
   code: string
@@ -247,7 +248,7 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
 
   useEffect(() => {
     // 获取当前的时间窗口设置
-    fetch('http://localhost:8080/event/backup/time-window', {
+    fetch(`http://localhost:${PORT}/event/backup/time-window`, {
       credentials: 'include',
     })
       .then(response => response.json())
@@ -261,7 +262,7 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
 
   const handleSetTimeWindow = async (days: number) => {
     try {
-      const response = await fetch('http://localhost:8080/event/backup/time-window', {
+      const response = await fetch(`http://localhost:${PORT}/event/backup/time-window`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -290,7 +291,7 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
       setLoading(true);
       setError(null);
       const endpoint = isSearchingBackup ? 'backup/list' : 'list';
-      const response = await fetch(`http://localhost:8080/event/${endpoint}?search=${encodeURIComponent(searchQuery)}`, {
+      const response = await fetch(`http://localhost:${PORT}/event/${endpoint}?search=${encodeURIComponent(searchQuery)}`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -331,7 +332,7 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
       return;
     }
     try {
-      const response = await fetch(`http://localhost:8080/event/code/${code}`, {
+      const response = await fetch(`http://localhost:${PORT}/event/code/${code}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -355,7 +356,7 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
 
   const handleSave = async (updatedEvent: Event) => {
     try {
-      const response = await fetch(`http://localhost:8080/event/code/${updatedEvent.code}`, {
+      const response = await fetch(`http://localhost:${PORT}/event/code/${updatedEvent.code}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -389,7 +390,7 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
     
     try {
       setIsBackingUp(true);
-      const response = await fetch('http://localhost:8080/event/backup/trigger', {
+      const response = await fetch(`http://localhost:${PORT}/event/backup/trigger`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -424,7 +425,7 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
     
     try {
       setIsResetting(true);
-      const response = await fetch('http://localhost:8080/event/backup/reset', {
+      const response = await fetch(`http://localhost:${PORT}/event/backup/reset`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
