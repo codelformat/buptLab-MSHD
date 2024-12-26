@@ -32,6 +32,7 @@ declare module 'recharts' {
   export class LineChart extends React.Component<Props> { }
   export class Line extends React.Component<Props> { }
 }
+import { PORT } from "@/components/constraints";
 
 declare namespace AMap {
   class Map {
@@ -91,7 +92,20 @@ declare namespace AMap {
     });
     search(
       keyword: string,
+<<<<<<< HEAD
       callback: (status: 'complete' | 'error' | 'no_data', result: PlaceSearchResult) => void
+=======
+      callback: (status: 'complete' | 'error' | 'no_data', result: {
+        poiList?: {
+          pois?: Array<{
+            location: {
+              lng: number;
+              lat: number;
+            };
+          }>;
+        };
+      }) => void
+>>>>>>> b2d0837624e2bd873c8fe3cc659b898820ffaaa9
     ): void;
   }
 
@@ -156,7 +170,7 @@ const MapPage: React.FC = () => {
     const fetchData = async () => {
       try {
         console.log('开始获取数据...');
-        const res = await fetch('http://localhost:8080/stats/getStats');
+        const res = await fetch(`http://localhost:${PORT}/stats/getStats`);
         if (!res.ok) {
           throw new Error('Failed to fetch data');
         }
@@ -183,30 +197,21 @@ const MapPage: React.FC = () => {
 
   // 地图初始化
   useEffect(() => {
-    if (!mapLoaded) {
-      console.log('等待地图 API 加载...');
-      return;
-    }
-    if (data.length === 0) {
-      console.log('等待数据加载...');
+    if (!mapLoaded || !data.length || typeof window === 'undefined' || !(window as any).AMap) {
+      console.log('等待地图 API 和数据加载...');
       return;
     }
 
     console.log('开始初始化地图���当前状态:', {
       mapLoaded,
       dataLength: data.length,
-      windowAMap: typeof window !== 'undefined' ? !!(window as any).AMap : false
+      windowAMap: !!(window as any).AMap
     });
-
-    // 确保 AMap 已定义
-    if (typeof AMap === 'undefined') {
-      console.error('AMap 未定义');
-      return;
-    }
 
     const initMap = () => {
       try {
         console.log('=== 开始初始化地图 ===');
+        const AMap = (window as any).AMap;
 
         const map = new AMap.Map('mapContainer', {
           center: [116.397428, 39.90923],
