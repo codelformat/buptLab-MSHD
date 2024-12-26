@@ -190,46 +190,46 @@ const TimeWindowModal = ({ isOpen, onClose, onSave, currentValue }: TimeWindowMo
   if (!isOpen) return null;
 
   return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 w-full max-w-md">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">设置备份时间窗口</h2>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-              <X className="h-6 w-6" />
-            </button>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">设置备份时间窗口</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">时间窗口（天）</label>
+            <input
+              type="number"
+              min="1"
+              value={days}
+              onChange={(e) => setDays(parseInt(e.target.value) || currentValue)}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            />
           </div>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">时间窗口（天）</label>
-              <input
-                  type="number"
-                  min="1"
-                  value={days}
-                  onChange={(e) => setDays(parseInt(e.target.value) || currentValue)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-            <div className="flex justify-end space-x-3 pt-4">
-              <button
-                  onClick={onClose}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-              >
-                取消
-              </button>
-              <button
-                  onClick={() => {
-                    if (days > 0) {
-                      onSave(days);
-                    }
-                  }}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-              >
-                保存
-              </button>
-            </div>
+          <div className="flex justify-end space-x-3 pt-4">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+            >
+              取消
+            </button>
+            <button
+              onClick={() => {
+                if (days > 0) {
+                  onSave(days);
+                }
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              保存
+            </button>
           </div>
         </div>
       </div>
+    </div>
   );
 };
 
@@ -250,13 +250,13 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
     fetch('http://localhost:12500/event/backup/time-window', {
       credentials: 'include',
     })
-        .then(response => response.json())
-        .then(result => {
-          if (result.code === 0) {
-            setTimeWindowDays(result.data);
-          }
-        })
-        .catch(console.error);
+      .then(response => response.json())
+      .then(result => {
+        if (result.code === 0) {
+          setTimeWindowDays(result.data);
+        }
+      })
+      .catch(console.error);
   }, []);
 
   const handleSetTimeWindow = async (days: number) => {
@@ -270,7 +270,7 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
         credentials: 'include',
         body: JSON.stringify({ days }),
       });
-
+      
       const result = await response.json();
       if (result.code === 0) {
         setTimeWindowDays(days);
@@ -386,7 +386,7 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
     if (!confirm('确定要立即备份数据吗？这将会把超过时间窗口的数据移动到备份数据库。')) {
       return;
     }
-
+    
     try {
       setIsBackingUp(true);
       const response = await fetch('http://localhost:12500/event/backup/trigger', {
@@ -397,11 +397,11 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
         },
         credentials: 'include',
       });
-
+      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
+      
       const result = await response.json();
       if (result.code === 0) {
         alert('数据备份成功');
@@ -421,7 +421,7 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
     if (!confirm('确定要重置备份表吗？这将删除所有备份数据并重新创建备份表。')) {
       return;
     }
-
+    
     try {
       setIsResetting(true);
       const response = await fetch('http://localhost:12500/event/backup/reset', {
@@ -432,11 +432,11 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
         },
         credentials: 'include',
       });
-
+      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
+      
       const result = await response.json();
       if (result.code === 0) {
         alert('备份表重置成功');
@@ -463,48 +463,48 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
   }
 
   return (
-      <>
-        <div className="mb-4 flex justify-end space-x-2">
-          <button
-              onClick={() => setIsTimeWindowModalOpen(true)}
-              className="flex items-center px-4 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-700"
-          >
-            <Clock className="h-4 w-4 mr-2" />
-            设置时间窗口 ({timeWindowDays}天)
-          </button>
-          <button
-              onClick={resetBackup}
-              disabled={isResetting}
-              className={`flex items-center px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed`}
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            {isResetting ? '重置中...' : '重置备份表'}
-          </button>
-          <button
-              onClick={triggerBackup}
-              disabled={isBackingUp}
-              className={`flex items-center px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed`}
-          >
-            <Save className="h-4 w-4 mr-2" />
-            {isBackingUp ? '备份中...' : '立即备份'}
-          </button>
-          <button
-              onClick={() => setIsSearchingBackup(!isSearchingBackup)}
-              className={`flex items-center px-4 py-2 rounded-md ${
-                  isSearchingBackup
-                      ? 'bg-yellow-600 text-white hover:bg-yellow-700'
-                      : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
-          >
-            <Archive className="h-4 w-4 mr-2" />
-            {isSearchingBackup ? '查看当前数据' : '查看备份数据'}
-          </button>
-        </div>
+    <>
+      <div className="mb-4 flex justify-end space-x-2">
+        <button
+          onClick={() => setIsTimeWindowModalOpen(true)}
+          className="flex items-center px-4 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-700"
+        >
+          <Clock className="h-4 w-4 mr-2" />
+          设置时间窗口 ({timeWindowDays}天)
+        </button>
+        <button
+          onClick={resetBackup}
+          disabled={isResetting}
+          className={`flex items-center px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed`}
+        >
+          <RefreshCw className="h-4 w-4 mr-2" />
+          {isResetting ? '重置中...' : '重置备份表'}
+        </button>
+        <button
+          onClick={triggerBackup}
+          disabled={isBackingUp}
+          className={`flex items-center px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed`}
+        >
+          <Save className="h-4 w-4 mr-2" />
+          {isBackingUp ? '备份中...' : '立即备份'}
+        </button>
+        <button
+          onClick={() => setIsSearchingBackup(!isSearchingBackup)}
+          className={`flex items-center px-4 py-2 rounded-md ${
+            isSearchingBackup
+              ? 'bg-yellow-600 text-white hover:bg-yellow-700'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
+          }`}
+        >
+          <Archive className="h-4 w-4 mr-2" />
+          {isSearchingBackup ? '查看当前数据' : '查看备份数据'}
+        </button>
+      </div>
 
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   编码
@@ -594,26 +594,26 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
                       </tr>
                   ))
               )}
-              </tbody>
-            </table>
-          </div>
+            </tbody>
+          </table>
         </div>
-        <EditModal
-            event={editingEvent}
-            isOpen={isModalOpen}
-            onClose={() => {
-              setIsModalOpen(false);
-              setEditingEvent(null);
-            }}
-            onSave={handleSave}
-        />
+      </div>
+      <EditModal
+        event={editingEvent}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingEvent(null);
+        }}
+        onSave={handleSave}
+      />
 
-        <TimeWindowModal
-            isOpen={isTimeWindowModalOpen}
-            onClose={() => setIsTimeWindowModalOpen(false)}
-            onSave={handleSetTimeWindow}
-            currentValue={timeWindowDays}
-        />
-      </>
+      <TimeWindowModal
+        isOpen={isTimeWindowModalOpen}
+        onClose={() => setIsTimeWindowModalOpen(false)}
+        onSave={handleSetTimeWindow}
+        currentValue={timeWindowDays}
+      />
+    </>
   )
 }
