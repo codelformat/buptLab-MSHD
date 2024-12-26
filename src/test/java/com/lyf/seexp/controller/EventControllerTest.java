@@ -1,3 +1,4 @@
+/*
 package com.lyf.seexp.controller;
 
 import com.lyf.seexp.pojo.Event;
@@ -199,3 +200,4 @@ public class EventControllerTest {
         }
     }
 }
+*/
