@@ -21,7 +21,7 @@ export default function LoginPage() {
 
         try {
             const response = await axios.post(
-                "http://localhost:8080/user/login", // 确保路径正确
+                "http://localhost:12500/user/login", // 确保路径正确
                 { username, password }, // 请求体，发送 JSON 格式数据
                 {
                     headers: {

@@ -68,4 +68,18 @@ public interface EventMapper {
             "ORDER BY time DESC")
     List<Event> searchEvents(@Param("query") String query);
 
+    @Insert("INSERT INTO event(code, location, time, source_category, source_subcategory, carrier, disaster_category, disaster_subcategory, disaster_indicator, description) " +
+            "VALUES (#{event.code}, #{event.location}, #{event.time}, #{event.sourceCategory}, #{event.sourceSubcategory}, #{event.carrier}, #{event.disasterCategory}, #{event.disasterSubcategory}, #{event.disasterIndicator}, #{event.description}) " +
+            "ON DUPLICATE KEY UPDATE " +
+            "location = #{event.location}, " +
+            "time = #{event.time}, " +
+            "source_category = #{event.sourceCategory}, " +
+            "source_subcategory = #{event.sourceSubcategory}, " +
+            "carrier = #{event.carrier}, " +
+            "disaster_category = #{event.disasterCategory}, " +
+            "disaster_subcategory = #{event.disasterSubcategory}, " +
+            "disaster_indicator = #{event.disasterIndicator}, " +
+            "description = #{event.description}")
+    void upsert(@Param("event") Event event);
+
 }
