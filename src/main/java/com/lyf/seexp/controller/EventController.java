@@ -61,19 +61,19 @@ public class EventController {
     }
 
     // 读取xls,添加多个条目
-    @PostMapping("/addXlsTextItem")
-    public Result addXlsTextItem() {
-        try {
-            ArrayList<Event> events = eventService.readXlsFile();
-            for (Event event : events) {
-                eventService.addItem(event);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Result.error("xls读取失败");
-        }
-        return Result.success();
-    }
+//    @PostMapping("/addXlsTextItem")
+//    public Result addXlsTextItem() {
+//        try {
+//            ArrayList<Event> events = eventService.readXlsFile();
+//            for (Event event : events) {
+//                eventService.addItem(event);
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return Result.error("xls读取失败");
+//        }
+//        return Result.success();
+//    }
 
     @PostMapping("/upload")
     public Result addFile(@RequestParam MultipartFile file) {

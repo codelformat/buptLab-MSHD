@@ -46,6 +46,4 @@ public class CodeInfoController {
         String code = codeInfoService.getCode(codeInfo);
         return Result.success(code);
     }
-
-
 }

@@ -11,6 +11,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @Data
 public class Event {
+
     private String code;                // 编码 (Code)
     private String location;            // 地点 (Location)
     private Timestamp time;             // 时间 (Time)

@@ -9,10 +9,10 @@ export default function Header() {
         <h1 className="text-xl font-semibold text-gray-800">灾情数据管理</h1>
         <div className="flex items-center space-x-4">
           <button className="p-2 hover:bg-gray-100 rounded-full">
-            <Bell className="h-5 w-5 text-gray-600" />
+            <Bell className="h-5 w-5 text-gray-600"/>
           </button>
           <button className="p-2 hover:bg-gray-100 rounded-full">
-            <Settings className="h-5 w-5 text-gray-600" />
+            <Settings className="h-5 w-5 text-gray-600"/>
           </button>
           <button className="p-2 hover:bg-gray-100 rounded-full">
             <User className="h-5 w-5 text-gray-600" />
@@ -21,4 +21,4 @@ export default function Header() {
       </div>
     </header>
   )
-} 
+}
