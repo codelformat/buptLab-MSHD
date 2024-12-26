@@ -149,17 +149,22 @@ public class EventController {
                 String[] parts = result.split("@filename=");
                 String imageUrl = parts[0];
                 String code = parts.length > 1 ? parts[1] : "unknown-id";
+                
+                if (!code.matches("^\\d{36}$")) {
+                    return Result.error("无效的灾情编码格式");
+                }
+                
                 Event eventWithoutDescription = eventService.decode(code);
                 eventWithoutDescription.setDescription(imageUrl);
                 eventService.addItem(eventWithoutDescription);
+                return Result.success("图片成功存入数据库");
             } else {
-                return Result.error("id为空");
+                return Result.error("编码为空");
             }
         } catch (Exception e) {
-
-            return Result.error("数据库错误");
+            e.printStackTrace();
+            return Result.error("处理失败: " + e.getMessage());
         }
-        return Result.success("iamge成功存入数据库");
     }
 
     @DeleteMapping("/code/{code}")
@@ -231,16 +236,40 @@ public class EventController {
     }
 
     @PostMapping("/backup/time-window")
-    public Result setBackupTimeWindow(@RequestParam Integer days) {
+    public Result setBackupTimeWindow(@RequestParam(required = false) Integer days, @RequestBody(required = false) TimeWindowRequest request) {
         try {
-            if (days <= 0) {
+            // Get days from either request param or request body
+            Integer finalDays = days;
+            if (finalDays == null && request != null) {
+                finalDays = request.getDays();
+            }
+            
+            if (finalDays == null) {
+                return Result.error("时间窗口不能为空");
+            }
+            
+            if (finalDays <= 0) {
                 return Result.error("时间窗口必须大于0天");
             }
-            dataBackupService.setTimeWindow(days);
+            
+            dataBackupService.setTimeWindow(finalDays);
             return Result.success("时间窗口设置成功");
         } catch (Exception e) {
             e.printStackTrace();
             return Result.error("设置时间窗口失败: " + e.getMessage());
+        }
+    }
+
+    // Add TimeWindowRequest static class
+    private static class TimeWindowRequest {
+        private Integer days;
+        
+        public Integer getDays() {
+            return days;
+        }
+        
+        public void setDays(Integer days) {
+            this.days = days;
         }
     }
 }

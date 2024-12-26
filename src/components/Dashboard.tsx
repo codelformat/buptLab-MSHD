@@ -25,7 +25,7 @@ export default function Dashboard() {
       const formData = new FormData()
       formData.append('file', file)
 
-      const response = await fetch('http://localhost:8080/event/addXlsTextItems', {
+      const response = await fetch('http://localhost:12500/event/addXlsTextItems', {
         method: 'POST',
         body: formData,
         credentials: 'include',

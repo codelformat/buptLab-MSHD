@@ -353,18 +353,20 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public void addItem(Event event) {
-        eventMapper.add(event);
+        eventMapper.upsert(event);
     }
 
     @Override
     public void addItemFromCode(String encodedEvent) {
         Event event = decode(encodedEvent);
-        eventMapper.add(event);
+        eventMapper.upsert(event);
     }
 
     @Override
     public void addTextItem(String eventCode, String text) {
-
+        Event event = decode(eventCode);
+        event.setDescription(text);
+        eventMapper.upsert(event);
     }
 
     //.xls或.xlsx文件
@@ -396,20 +398,35 @@ public class EventServiceImpl implements EventService {
         if (cell == null) {
             return "";
         }
-        switch (cell.getCellType()) {
-            case STRING:
-                return cell.getStringCellValue();
-            case NUMERIC:
-                if (DateUtil.isCellDateFormatted(cell)) {
-                    return cell.getDateCellValue().toString();
-                }
-                return String.valueOf(cell.getNumericCellValue());
-            case BOOLEAN:
-                return String.valueOf(cell.getBooleanCellValue());
-            case FORMULA:
-                return cell.getCellFormula();
-            default:
-                return "";
+        
+        try {
+            switch (cell.getCellType()) {
+                case STRING:
+                    return cell.getStringCellValue().trim();
+                case NUMERIC:
+                    if (DateUtil.isCellDateFormatted(cell)) {
+                        return new SimpleDateFormat("yyyyMMddHHmmss").format(cell.getDateCellValue());
+                    }
+                    // Handle numeric values that should be strings (like IDs)
+                    double numericValue = cell.getNumericCellValue();
+                    if (numericValue == Math.floor(numericValue)) {
+                        return String.format("%.0f", numericValue);
+                    }
+                    return String.valueOf(numericValue);
+                case BOOLEAN:
+                    return String.valueOf(cell.getBooleanCellValue());
+                case FORMULA:
+                    try {
+                        return String.valueOf(cell.getStringCellValue());
+                    } catch (Exception e) {
+                        return String.valueOf(cell.getNumericCellValue());
+                    }
+                default:
+                    return "";
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting cell value: " + e.getMessage());
+            return "";
         }
     }
     private ArrayList<Event> readExcel(File file){
@@ -487,59 +504,49 @@ public class EventServiceImpl implements EventService {
     public ArrayList<Event> readXlsxFile(InputStream inputStream) {
         ArrayList<Event> events = new ArrayList<>();
         final int BATCH_SIZE = 1000;
-        int batchCount = 0;
         int totalRows = 0;
 
-        try {
-            Workbook workbook = WorkbookFactory.create(inputStream);
+        try (Workbook workbook = WorkbookFactory.create(inputStream)) {
             Sheet sheet = workbook.getSheetAt(0);
 
-            // 验证表头（可选）
+            // Skip header row if it exists
             Row headerRow = sheet.getRow(0);
-            if (headerRow != null && "id".equals(getCellValue(headerRow.getCell(0)))) {
-                // 跳过表头
+            if (headerRow != null && "id".equalsIgnoreCase(getCellValue(headerRow.getCell(0)))) {
                 totalRows++;
             }
 
+            // Process data rows
             for (Row row : sheet) {
-                if (row.getRowNum() < totalRows) continue; // 跳过已处理的行（包括表头）
+                if (row.getRowNum() < totalRows) continue;
 
                 String code = getCellValue(row.getCell(0));
                 String description = getCellValue(row.getCell(1));
 
-                if (code.isEmpty()) continue;
+                if (code.isEmpty() || !code.matches("^\\d{36}$")) {
+                    System.err.println("Skipping invalid code at row " + (row.getRowNum() + 1));
+                    continue;
+                }
 
                 try {
                     Event event = decode(code);
                     event.setDescription(description);
                     events.add(event);
-                    
-                    batchCount++;
+                    eventMapper.upsert(event);
                     totalRows++;
 
-                    // 每处理BATCH_SIZE条数据，就批量插入数据库
-                    if (batchCount >= BATCH_SIZE) {
-                        batchInsertEvents(events);
-                        events.clear();
-                        batchCount = 0;
+                    if (totalRows % BATCH_SIZE == 0) {
                         System.out.println("Processed " + totalRows + " rows");
                     }
                 } catch (Exception e) {
                     System.err.println("Error processing row " + (totalRows + 1) + ": " + e.getMessage());
-                    continue;
                 }
             }
 
-            // 处理剩余的数据
-            if (!events.isEmpty()) {
-                batchInsertEvents(events);
-                System.out.println("Processed " + totalRows + " rows in total");
-            }
-
-            workbook.close();
+            System.out.println("Successfully processed " + totalRows + " rows in total");
         } catch (Exception e) {
             System.err.println("Error reading Excel file: " + e.getMessage());
             e.printStackTrace();
+            throw new RuntimeException("Failed to process Excel file", e);
         }
 
         return events;
