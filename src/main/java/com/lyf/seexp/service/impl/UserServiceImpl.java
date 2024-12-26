@@ -1,54 +1,48 @@
 package com.lyf.seexp.service.impl;
 
-import com.lyf.seexp.mapper.UserMapper;
-import com.lyf.seexp.pojo.User;
+import com.lyf.seexp.entity.User;
+import com.lyf.seexp.repository.UserRepository;
 import com.lyf.seexp.service.UserService;
-import com.lyf.seexp.utils.Md5Util;
-import com.lyf.seexp.utils.ThreadLocalUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.Map;
 
 @Service
 public class UserServiceImpl implements UserService {
+
     @Autowired
-    private UserMapper userMapper;
+    private UserRepository userRepository;
+
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
     @Override
-    public User findByUserName(String username) {
-        User u = userMapper.findByUserName(username);
-        return u;
+    public User registerUser(String username, String password) throws RuntimeException {
+        if (userRepository.existsByUsername(username)) {
+            throw new RuntimeException("Username already exists");
+        }
+
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(passwordEncoder.encode(password));
+
+        return userRepository.save(user);
     }
 
     @Override
-    public void register(String username, String password) {
-        //加密
-        String md5String = Md5Util.getMD5String(password);
-        //添加
-        userMapper.add(username,md5String);
+    public User loginUser(String username, String password) throws RuntimeException {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new RuntimeException("Invalid password");
+        }
+
+        return user;
     }
 
     @Override
-    public void update(User user) {
-        user.setUpdateTime(LocalDateTime.now());
-        userMapper.update(user);
+    public boolean existsByUsername(String username) {
+        return userRepository.existsByUsername(username);
     }
-
-    @Override
-    public void updateAvatar(String avatarUrl) {
-        Map<String,Object> map = ThreadLocalUtil.get();
-        Integer id = (Integer) map.get("id");
-        userMapper.updateAvatar(avatarUrl,id);
-    }
-
-    @Override
-    public void updatePwd(String newPwd) {
-        Map<String,Object> map = ThreadLocalUtil.get();
-        Integer id = (Integer) map.get("id");
-        userMapper.updatePwd(Md5Util.getMD5String(newPwd),id);
-    }
-
-
 }
 

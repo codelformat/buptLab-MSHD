@@ -1,20 +1,9 @@
 package com.lyf.seexp.service;
 
-import com.lyf.seexp.pojo.User;
+import com.lyf.seexp.entity.User;
 
 public interface UserService {
-    //根据用户名查询用户
-    User findByUserName(String username);
-
-    //注册
-    void register(String username, String password);
-
-    //更新
-    void update(User user);
-
-    //更新头像
-    void updateAvatar(String avatarUrl);
-
-    //更新密码
-    void updatePwd(String newPwd);
+    User registerUser(String username, String password) throws RuntimeException;
+    User loginUser(String username, String password) throws RuntimeException;
+    boolean existsByUsername(String username);
 }
