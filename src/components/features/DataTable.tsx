@@ -247,7 +247,7 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
 
   useEffect(() => {
     // 获取当前的时间窗口设置
-    fetch('http://localhost:12500/event/backup/time-window', {
+    fetch('http://localhost:8080/event/backup/time-window', {
       credentials: 'include',
     })
       .then(response => response.json())
@@ -261,7 +261,7 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
 
   const handleSetTimeWindow = async (days: number) => {
     try {
-      const response = await fetch('http://localhost:12500/event/backup/time-window', {
+      const response = await fetch('http://localhost:8080/event/backup/time-window', {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -290,7 +290,7 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
       setLoading(true);
       setError(null);
       const endpoint = isSearchingBackup ? 'backup/list' : 'list';
-      const response = await fetch(`http://localhost:12500/event/${endpoint}?search=${encodeURIComponent(searchQuery)}`, {
+      const response = await fetch(`http://localhost:8080/event/${endpoint}?search=${encodeURIComponent(searchQuery)}`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -331,7 +331,7 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
       return;
     }
     try {
-      const response = await fetch(`http://localhost:12500/event/code/${code}`, {
+      const response = await fetch(`http://localhost:8080/event/code/${code}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -355,7 +355,7 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
 
   const handleSave = async (updatedEvent: Event) => {
     try {
-      const response = await fetch(`http://localhost:12500/event/code/${updatedEvent.code}`, {
+      const response = await fetch(`http://localhost:8080/event/code/${updatedEvent.code}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -389,7 +389,7 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
     
     try {
       setIsBackingUp(true);
-      const response = await fetch('http://localhost:12500/event/backup/trigger', {
+      const response = await fetch('http://localhost:8080/event/backup/trigger', {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -424,7 +424,7 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
     
     try {
       setIsResetting(true);
-      const response = await fetch('http://localhost:12500/event/backup/reset', {
+      const response = await fetch('http://localhost:8080/event/backup/reset', {
         method: 'POST',
         headers: {
           'Accept': 'application/json',

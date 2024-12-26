@@ -30,7 +30,7 @@ public class UserController {
     private StringRedisTemplate stringRedisTemplate;
 
     @PostMapping("/register")
-    public Result register(@Pattern(regexp = "^\\S{5,16}$") String username, @Pattern(regexp = "^\\S{5,16}$") String password) {
+    public Result<String> register(@Pattern(regexp = "^\\S{5,16}$") String username, @Pattern(regexp = "^\\S{5,16}$") String password) {
 
         //查询用户
         User u = userService.findByUserName(username);
@@ -38,7 +38,7 @@ public class UserController {
             //没有占用
             //注册
             userService.register(username, password);
-            return Result.success();
+            return Result.success("注册成功");
         } else {
             //占用
             return Result.error("用户名已被占用");
@@ -62,8 +62,8 @@ public class UserController {
             claims.put("username", loginUser.getUsername());
             String token = JwtUtil.genToken(claims);
             //把token存储到redis中
-//            ValueOperations<String, String> operations = stringRedisTemplate.opsForValue();
-//            operations.set(token,token,1, TimeUnit.HOURS);
+            ValueOperations<String, String> operations = stringRedisTemplate.opsForValue();
+            operations.set(token,token,1, TimeUnit.HOURS);
             return Result.success(token);
         }
         return Result.error("密码错误");
@@ -126,8 +126,8 @@ public class UserController {
         //2.调用service完成密码更新
         userService.updatePwd(newPwd);
         //删除redis中对应的token
-//        ValueOperations<String, String> operations = stringRedisTemplate.opsForValue();
-//        operations.getOperations().delete(token);
+        ValueOperations<String, String> operations = stringRedisTemplate.opsForValue();
+        operations.getOperations().delete(token);
         return Result.success();
     }
 }

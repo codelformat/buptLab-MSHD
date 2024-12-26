@@ -23,12 +23,12 @@ public class LoginInterceptor implements HandlerInterceptor {
         //验证token
         try {
             //从redis中获取相同的token
-//            ValueOperations<String, String> operations = stringRedisTemplate.opsForValue();
-//            String redisToken = operations.get(token);
-//            if (redisToken==null){
-//                //token已经失效了
-//                throw new RuntimeException();
-//            }
+            ValueOperations<String, String> operations = stringRedisTemplate.opsForValue();
+            String redisToken = operations.get(token);
+            if (redisToken==null){
+                //token已经失效了
+                throw new RuntimeException();
+            }
             Map<String, Object> claims = JwtUtil.parseToken(token);
             //把业务数据存储到ThreadLocal中
             ThreadLocalUtil.set(claims);
