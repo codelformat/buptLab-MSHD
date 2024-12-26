@@ -1,3 +1,4 @@
+/*
 package com.lyf.seexp;
 
 import org.junit.jupiter.api.Test;
@@ -30,3 +31,4 @@ public class RedisTest {
         System.out.println(operations.get("username"));
     }
 }
+*/

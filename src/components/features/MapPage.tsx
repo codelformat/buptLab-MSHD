@@ -185,7 +185,16 @@ const MapPage: React.FC = () => {
           const address = item.location;
           console.log(`处理第 ${index + 1}/${data.length} 条数据:`, address);
 
-          placeSearch.search(address, (status, result) => {
+          placeSearch.search(address, (status:string, result: {
+            poiList: {
+              pois: Array<{
+                location: {
+                  lng: number;
+                  lat: number;
+                };
+              }>;
+            };
+          }) => {
             console.log('搜索回调:', {
               地址: address,
               状态: status,
