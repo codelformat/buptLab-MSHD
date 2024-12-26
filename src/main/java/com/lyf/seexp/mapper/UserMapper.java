@@ -1,6 +1,5 @@
 package com.lyf.seexp.mapper;
 
-
 import com.lyf.seexp.pojo.User;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -27,3 +26,4 @@ public interface UserMapper {
     @Update("update user set password=#{md5String},update_time=now() where id=#{id}")
     void updatePwd(String md5String, Integer id);
 }
+

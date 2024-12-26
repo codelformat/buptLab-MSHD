@@ -1,6 +1,6 @@
 package com.lyf.seexp.service;
-import com.lyf.seexp.pojo.User;
 
+import com.lyf.seexp.pojo.User;
 
 public interface UserService {
     //根据用户名查询用户

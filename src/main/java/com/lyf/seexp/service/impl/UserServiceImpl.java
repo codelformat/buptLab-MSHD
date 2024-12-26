@@ -3,8 +3,6 @@ package com.lyf.seexp.service.impl;
 import com.lyf.seexp.mapper.UserMapper;
 import com.lyf.seexp.pojo.User;
 import com.lyf.seexp.service.UserService;
-
-
 import com.lyf.seexp.utils.Md5Util;
 import com.lyf.seexp.utils.ThreadLocalUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +31,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void update(User user) {
-        user.setUpdatedTime(LocalDateTime.now());
+        user.setUpdateTime(LocalDateTime.now());
         userMapper.update(user);
     }
 

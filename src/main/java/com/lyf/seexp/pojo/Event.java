@@ -6,10 +6,12 @@ import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
 
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 public class Event {
+
     private String code;                // 编码 (Code)
     private String location;            // 地点 (Location)
     private Timestamp time;             // 时间 (Time)
@@ -20,4 +22,8 @@ public class Event {
     private String disasterSubcategory; // 灾情子类 (Disaster Subcategory)
     private String disasterIndicator;   // 灾情指标 (Disaster Indicator)
     private String description;         // 描述 (Description)
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

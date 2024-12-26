@@ -3,7 +3,6 @@ package com.lyf.seexp.controller;
 import com.lyf.seexp.pojo.Result;
 import com.lyf.seexp.pojo.User;
 import com.lyf.seexp.service.UserService;
-
 import com.lyf.seexp.utils.JwtUtil;
 import com.lyf.seexp.utils.Md5Util;
 import com.lyf.seexp.utils.ThreadLocalUtil;
@@ -31,7 +30,7 @@ public class UserController {
     private StringRedisTemplate stringRedisTemplate;
 
     @PostMapping("/register")
-    public Result register(@Pattern(regexp = "^\\S{4,16}$") String username, @Pattern(regexp = "^\\S{4,16}$") String password) {
+    public Result register(@Pattern(regexp = "^\\S{5,16}$") String username, @Pattern(regexp = "^\\S{5,16}$") String password) {
 
         //查询用户
         User u = userService.findByUserName(username);
@@ -47,7 +46,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public Result<String> login(@Pattern(regexp = "^\\S{4,16}$") String username, @Pattern(regexp = "^\\S{4,16}$") String password) {
+    public Result<String> login(@Pattern(regexp = "^\\S{5,16}$") String username, @Pattern(regexp = "^\\S{5,16}$") String password) {
         //根据用户名查询用户
         User loginUser = userService.findByUserName(username);
         //判断该用户是否存在
@@ -63,8 +62,8 @@ public class UserController {
             claims.put("username", loginUser.getUsername());
             String token = JwtUtil.genToken(claims);
             //把token存储到redis中
-            ValueOperations<String, String> operations = stringRedisTemplate.opsForValue();
-            operations.set(token,token,1, TimeUnit.HOURS);
+//            ValueOperations<String, String> operations = stringRedisTemplate.opsForValue();
+//            operations.set(token,token,1, TimeUnit.HOURS);
             return Result.success(token);
         }
         return Result.error("密码错误");
@@ -72,14 +71,20 @@ public class UserController {
 
     @GetMapping("/userInfo")
     public Result<User> userInfo(/*@RequestHeader(name = "Authorization") String token*/) {
-        //根据用户名查询用户
-       /* Map<String, Object> map = JwtUtil.parseToken(token);
-        String username = (String) map.get("username");*/
         Map<String, Object> map = ThreadLocalUtil.get();
         String username = (String) map.get("username");
         User user = userService.findByUserName(username);
         return Result.success(user);
     }
+
+//    @GetMapping("/userInfo")
+//    public Result<User> userInfo(@RequestHeader(name = "Authorization") String token) {
+//        //根据用户名查询用户
+//        Map<String, Object> map = JwtUtil.parseToken(token);
+//        String username = (String) map.get("username");
+//        User user = userService.findByUserName(username);
+//        return Result.success(user);
+//    }
 
     @PutMapping("/update")
     public Result update(@RequestBody @Validated User user) {
@@ -87,7 +92,7 @@ public class UserController {
         return Result.success();
     }
 
-    @PatchMapping("updateAvatar")
+    @PatchMapping("/updateAvatar")
     public Result updateAvatar(@RequestParam @URL String avatarUrl) {
         userService.updateAvatar(avatarUrl);
         return Result.success();
@@ -121,8 +126,9 @@ public class UserController {
         //2.调用service完成密码更新
         userService.updatePwd(newPwd);
         //删除redis中对应的token
-        ValueOperations<String, String> operations = stringRedisTemplate.opsForValue();
-        operations.getOperations().delete(token);
+//        ValueOperations<String, String> operations = stringRedisTemplate.opsForValue();
+//        operations.getOperations().delete(token);
         return Result.success();
     }
 }
+

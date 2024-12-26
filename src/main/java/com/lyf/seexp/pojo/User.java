@@ -1,75 +1,33 @@
 package com.lyf.seexp.pojo;
-import lombok.AllArgsConstructor;
+
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-
-@NoArgsConstructor
-@AllArgsConstructor
+//lombok  在编译阶段,为实体类自动生成setter  getter toString
+// pom文件中引入依赖   在实体类上添加注解
 @Data
 public class User {
-    private Long id;
-    private String username;
-    private String password;
-    private String email;
-    private String userPic;
-    private LocalDateTime createTime;
-    private LocalDateTime updatedTime;
+    @NotNull
+    private Integer id;//主键ID
+    private String username;//用户名
+    @JsonIgnore//让springmvc把当前对象转换成json字符串的时候,忽略password,最终的json字符串中就没有password这个属性了
+    private String password;//密码
 
-    public Long getId() {
-        return id;
-    }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    @NotEmpty
+    @Pattern(regexp = "^\\S{1,10}$")
+    private String nickname;//昵称
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getUserPic() {
-        return userPic;
-    }
-
-    public void setUserPic(String userPic) {
-        this.userPic = userPic;
-    }
-
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-    }
-
-    public LocalDateTime getUpdatedTime() {
-        return updatedTime;
-    }
-
-    public void setUpdatedTime(LocalDateTime updatedTime) {
-        this.updatedTime = updatedTime;
-    }
+    @NotEmpty
+    @Email
+    private String email;//邮箱
+    private String userPic;//用户头像地址
+    private LocalDateTime createTime;//创建时间
+    private LocalDateTime updateTime;//更新时间
 }

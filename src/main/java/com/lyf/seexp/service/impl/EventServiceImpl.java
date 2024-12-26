@@ -25,6 +25,7 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class EventServiceImpl implements EventService {
@@ -485,37 +486,105 @@ public class EventServiceImpl implements EventService {
     @Override
     public ArrayList<Event> readXlsxFile(InputStream inputStream) {
         ArrayList<Event> events = new ArrayList<>();
-        try{
-            Workbook workbook;
-            workbook = new XSSFWorkbook(inputStream);
-            // Get the first sheet
-            Sheet sheet = workbook.getSheetAt(0);
-            //可加上对表的限制的代码判断(只能有两列……)
+        final int BATCH_SIZE = 1000;
+        int batchCount = 0;
+        int totalRows = 0;
 
-            // Iterate through rows and cells
+        try {
+            Workbook workbook = WorkbookFactory.create(inputStream);
+            Sheet sheet = workbook.getSheetAt(0);
+
+            // 验证表头（可选）
+            Row headerRow = sheet.getRow(0);
+            if (headerRow != null && "id".equals(getCellValue(headerRow.getCell(0)))) {
+                // 跳过表头
+                totalRows++;
+            }
+
             for (Row row : sheet) {
-                int i = 0;
-                Event event = new Event();
-                for (Cell cell : row) {
-                    String cellValue = getCellValue(cell);
-                    if (i == 0) {
-                        String code = cellValue;
-                        if (code.equals("id")) break;
-                        if (code.isEmpty()) break;
-                        event = decode(code);
+                if (row.getRowNum() < totalRows) continue; // 跳过已处理的行（包括表头）
+
+                String code = getCellValue(row.getCell(0));
+                String description = getCellValue(row.getCell(1));
+
+                if (code.isEmpty()) continue;
+
+                try {
+                    Event event = decode(code);
+                    event.setDescription(description);
+                    events.add(event);
+                    
+                    batchCount++;
+                    totalRows++;
+
+                    // 每处理BATCH_SIZE条数据，就批量插入数据库
+                    if (batchCount >= BATCH_SIZE) {
+                        batchInsertEvents(events);
+                        events.clear();
+                        batchCount = 0;
+                        System.out.println("Processed " + totalRows + " rows");
                     }
-                    if (i == 1) {
-                        String desription = cellValue;
-                        event.setDescription(desription);
-                        events.add(event);
-                        break;
-                    }
-                    ++i;
+                } catch (Exception e) {
+                    System.err.println("Error processing row " + (totalRows + 1) + ": " + e.getMessage());
+                    continue;
                 }
             }
-        }catch (IOException e){
+
+            // 处理剩余的数据
+            if (!events.isEmpty()) {
+                batchInsertEvents(events);
+                System.out.println("Processed " + totalRows + " rows in total");
+            }
+
+            workbook.close();
+        } catch (Exception e) {
+            System.err.println("Error reading Excel file: " + e.getMessage());
             e.printStackTrace();
         }
+
         return events;
+    }
+
+    private void batchInsertEvents(List<Event> events) {
+        if (events.isEmpty()) return;
+        
+        try {
+            for (Event event : events) {
+                eventMapper.add(event);
+            }
+        } catch (Exception e) {
+            System.err.println("Error batch inserting events: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public List<Event> getEventList() {
+        try {
+            return eventMapper.findAll();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to fetch event list");
+        }
+    }
+
+    @Override
+    public void deleteByCode(String code) {
+        eventMapper.deleteByCode(code);
+    }
+
+    @Override
+    public void updateByCode(Event event) {
+        eventMapper.updateByCode(event);
+    }
+
+    @Override
+    public List<Event> searchEvents(String query) {
+        try {
+            return eventMapper.searchEvents(query);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to search events");
+        }
     }
 }
