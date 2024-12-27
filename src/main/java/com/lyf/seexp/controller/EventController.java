@@ -260,6 +260,36 @@ public class EventController {
         }
     }
 
+    @PostMapping("/addEventWithMedia")
+    public Result addEventWithMedia(
+            @Pattern(regexp = "^\\d{36}$", message = "灾情码必须是36位数字") @RequestParam String code,
+            @RequestParam MultipartFile file) {
+        try {
+            // 1. 上传文件到OSS
+            String fileUrl = AliOSSUtils.upload(file);
+            if (fileUrl == null) {
+                return Result.error("文件上传失败");
+            }
+
+            // 2. 解析灾情码
+            Event event = eventService.decode(code);
+            if (event == null) {
+                return Result.error("灾情码解析失败");
+            }
+
+            // 3. 设置描述（文件URL）
+            event.setDescription(fileUrl);
+
+            // 4. 保存到数据库
+            eventService.addItem(event);
+
+            return Result.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("处理失败: " + e.getMessage());
+        }
+    }
+
     // Add TimeWindowRequest static class
     private static class TimeWindowRequest {
         private Integer days;

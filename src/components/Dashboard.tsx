@@ -4,11 +4,13 @@ import { useState } from 'react'
 import Sidebar from '@/components/layout/Sidebar'
 import Header from '@/components/layout/Header'
 import DataTable from '@/components/features/DataTable'
-import { Search, Upload } from 'lucide-react'
+import AddEventModal from '@/components/features/AddEventModal'
+import { Search, Upload, Plus } from 'lucide-react'
 
 export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -72,6 +74,13 @@ export default function Dashboard() {
                 />
                 <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               </div>
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                <Plus className="h-5 w-5" />
+                增加条目
+              </button>
               <div className="relative">
                 <input
                   type="file"
@@ -96,6 +105,13 @@ export default function Dashboard() {
           <DataTable searchQuery={searchQuery} />
         </main>
       </div>
+      <AddEventModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={() => {
+          setSearchQuery(prev => prev + ' ') // 触发数据表刷新
+        }}
+      />
     </div>
   )
 } 

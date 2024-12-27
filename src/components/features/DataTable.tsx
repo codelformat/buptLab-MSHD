@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Edit2, Trash2, MoreVertical, X, Archive, Save, RefreshCw, Clock } from 'lucide-react'
+import { Edit2, Trash2, MoreVertical, X, Archive, Save, RefreshCw, Clock, Download } from 'lucide-react'
 import { PORT } from '@/components/constraints'
 
 interface Event {
@@ -233,6 +233,36 @@ const TimeWindowModal = ({ isOpen, onClose, onSave, currentValue }: TimeWindowMo
     </div>
   );
 };
+
+const isValidUrl = (str: string) => {
+  try {
+    new URL(str)
+    return true
+  } catch {
+    return false
+  }
+}
+
+const handleDownload = async (url: string) => {
+  try {
+    window.open(url, '_blank')
+    // const response = await fetch(url)
+    // const blob = await response.blob()
+    // const filename = url.split('/').pop() || 'download'
+    
+    // // 创建一个临时下载链接
+    // const link = document.createElement('a')
+    // link.href = URL.createObjectURL(blob)
+    // link.download = filename
+    // document.body.appendChild(link)
+    // link.click()
+    // document.body.removeChild(link)
+    // URL.revokeObjectURL(link.href)
+  } catch (error) {
+    console.error('下载失败:', error)
+    alert('下载失败')
+  }
+}
 
 export default function DataTable({ searchQuery }: { searchQuery: string }) {
   const [data, setData] = useState<Event[]>([])
@@ -567,7 +597,20 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
                         <td className="px-4 py-4 text-sm">{item.disasterCategory}</td>
                         <td className="px-4 py-4 text-sm">{item.disasterSubcategory}</td>
                         <td className="px-4 py-4 text-sm">{item.disasterIndicator}</td>
-                        <td className="px-4 py-4 text-sm max-w-xs truncate">{item.description}</td>
+                        <td className="px-4 py-4 text-sm max-w-xs truncate">
+                          {isValidUrl(item.description) ? (
+                            <a
+                              href={item.description}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              {item.description}
+                            </a>
+                          ) : (
+                            item.description
+                          )}
+                        </td>
                         <td className="px-4 py-4 whitespace-nowrap">
                           <div className="flex space-x-2">
                             <button
@@ -584,12 +627,15 @@ export default function DataTable({ searchQuery }: { searchQuery: string }) {
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
-                            <button
-                                className="text-gray-400 hover:text-gray-600"
-                                title="更多"
-                            >
-                              <MoreVertical className="h-4 w-4" />
-                            </button>
+                            {isValidUrl(item.description) && (
+                              <button
+                                onClick={() => handleDownload(item.description)}
+                                className="text-green-600 hover:text-green-800"
+                                title="下载"
+                              >
+                                <Download className="h-4 w-4" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
