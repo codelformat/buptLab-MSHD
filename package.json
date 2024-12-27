@@ -3,6 +3,8 @@
     "@types/amap-js-api": "^1.4.16"
   },
   "dependencies": {
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.2",
     "recharts": "^2.15.0"
   }
 }

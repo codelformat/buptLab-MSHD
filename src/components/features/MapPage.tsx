@@ -92,9 +92,6 @@ declare namespace AMap {
     });
     search(
       keyword: string,
-<<<<<<< HEAD
-      callback: (status: 'complete' | 'error' | 'no_data', result: PlaceSearchResult) => void
-=======
       callback: (status: 'complete' | 'error' | 'no_data', result: {
         poiList?: {
           pois?: Array<{
@@ -105,7 +102,6 @@ declare namespace AMap {
           }>;
         };
       }) => void
->>>>>>> b2d0837624e2bd873c8fe3cc659b898820ffaaa9
     ): void;
   }
 
