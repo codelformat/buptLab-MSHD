@@ -40,4 +40,4 @@ build/
 *.ipynb
 region_code_cache.json
 
-node_modules
+node_modules.env.local
